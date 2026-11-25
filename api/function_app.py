@@ -83,6 +83,26 @@ SCHEMA = [
     IF COL_LENGTH('dbo.oportunidades','ticket_minimo') IS NULL
     ALTER TABLE dbo.oportunidades ADD ticket_minimo DECIMAL(18,2) NULL
     """,
+    # v0.4: Radar — anotações datadas por contato (o que busca / o que está trazendo)
+    """
+    IF OBJECT_ID('dbo.anotacoes') IS NULL
+    CREATE TABLE dbo.anotacoes (
+        id INT IDENTITY PRIMARY KEY,
+        contato_id INT NOT NULL REFERENCES dbo.contatos(id) ON DELETE CASCADE,
+        data DATE NOT NULL,
+        texto NVARCHAR(MAX) NOT NULL,
+        classes NVARCHAR(500) NULL,
+        jurisdicao NVARCHAR(10) NULL,
+        criado_em DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        criado_por NVARCHAR(200) NULL,
+        atualizado_em DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        atualizado_por NVARCHAR(200) NULL
+    )
+    """,
+    """
+    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_anotacoes_contato_data')
+    CREATE INDEX ix_anotacoes_contato_data ON dbo.anotacoes (contato_id, data DESC)
+    """,
 ]
 
 _schema_ok = False
@@ -431,3 +451,73 @@ def deal(req, conn, email):
     if not linha:
         raise HttpErro(404, "Deal não encontrado.")
     return resposta(linha)
+
+
+# --- Radar: anotações por contato
+
+JURIS_ANOTACAO = {"onshore", "offshore", "ambos"}
+
+SQL_ANOTACAO = """
+SELECT a.id, a.contato_id, c.nome AS contato_nome, c.empresa AS contato_empresa, c.tipo AS contato_tipo,
+       a.data, a.texto, a.classes, a.jurisdicao, a.criado_por, a.criado_em, a.atualizado_por, a.atualizado_em
+FROM dbo.anotacoes a JOIN dbo.contatos c ON c.id = a.contato_id
+"""
+
+
+def linha_anotacao(r):
+    if r is not None:
+        r["classes"] = [x for x in (r.get("classes") or "").split("|") if x]
+    return r
+
+
+def campos_anotacao(d):
+    classes = d.get("classes") or []
+    if not isinstance(classes, list) or any(not isinstance(x, str) or "|" in x or len(x) > 100 for x in classes):
+        raise HttpErro(400, "Etiquetas inválidas.")
+    juris = d.get("jurisdicao") or None
+    if juris is not None and juris not in JURIS_ANOTACAO:
+        raise HttpErro(400, "Valor inválido em 'jurisdicao'.")
+    dt_ = data(d, "data") or dt.date.today()
+    return (
+        inteiro(d, "contato_id", obrigatorio=True),
+        dt_,
+        texto(d, "texto", obrigatorio=True, maximo=None),
+        "|".join(dict.fromkeys(x.strip() for x in classes if x.strip())) or None,
+        juris,
+    )
+
+
+@app.route(route="anotacoes", methods=["GET", "POST"])
+@tratar
+def anotacoes(req, conn, email):
+    cur = conn.cursor()
+    if req.method == "GET":
+        filtros, params = [], []
+        if req.params.get("contato_id"):
+            filtros.append("a.contato_id=%s"); params.append(int(req.params["contato_id"]))
+        if req.params.get("tipo") in TIPOS_CONTATO:
+            filtros.append("c.tipo=%s"); params.append(req.params["tipo"])
+        where = (" WHERE " + " AND ".join(filtros)) if filtros else ""
+        cur.execute("SELECT TOP 500 * FROM (" + SQL_ANOTACAO + where + ") x ORDER BY x.data DESC, x.id DESC", tuple(params))
+        return resposta([linha_anotacao(r) for r in cur.fetchall()])
+    c = campos_anotacao(corpo_json(req))
+    novo = um(cur, "INSERT INTO dbo.anotacoes (contato_id, data, texto, classes, jurisdicao, criado_por, atualizado_por)"
+                   " OUTPUT INSERTED.id VALUES (%s,%s,%s,%s,%s,%s,%s)", c + (email, email))
+    return resposta(linha_anotacao(um(cur, SQL_ANOTACAO + " WHERE a.id=%s", (novo["id"],))), 201)
+
+
+@app.route(route="anotacoes/{id:int}", methods=["PUT", "DELETE"])
+@tratar
+def anotacao(req, conn, email):
+    cur = conn.cursor()
+    i = int(req.route_params["id"])
+    if req.method == "DELETE":
+        cur.execute("DELETE FROM dbo.anotacoes WHERE id=%s", (i,))
+        return resposta({"ok": True})
+    c = campos_anotacao(corpo_json(req))
+    cur.execute("UPDATE dbo.anotacoes SET contato_id=%s, data=%s, texto=%s, classes=%s, jurisdicao=%s,"
+                " atualizado_em=SYSUTCDATETIME(), atualizado_por=%s WHERE id=%s", c + (email, i))
+    linha = um(cur, SQL_ANOTACAO + " WHERE a.id=%s", (i,))
+    if not linha:
+        raise HttpErro(404, "Anotação não encontrada.")
+    return resposta(linha_anotacao(linha))

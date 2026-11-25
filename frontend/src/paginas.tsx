@@ -5,6 +5,8 @@ import {
 } from './api'
 import { Cabeca, Estado, Ferramentas, Painel, Segmentos, paraForm, useLista } from './comum'
 import { Icone } from './icones'
+import { HistoricoContato } from './anotacoes'
+import { useEffect } from 'react'
 
 function buscar<T>(itens: T[], busca: string, campos: (i: T) => (string | null | undefined)[]) {
   const q = sem(busca.trim())
@@ -168,7 +170,7 @@ export function Oportunidades() {
 
 const CT_VAZIO = { nome: '', empresa: '', email: '', telefone: '', tipo: 'investidor' as TipoContato, observacoes: '' }
 
-export function Contatos() {
+export function Contatos({ abrirId }: { abrirId?: number }) {
   const { itens, erro, recarregar } = useLista<Contato>('contatos')
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<'todos' | TipoContato>('todos')
@@ -178,6 +180,10 @@ export function Contatos() {
   const lista = itens && buscar(filtro === 'todos' ? itens : itens.filter(c => c.tipo === filtro), busca,
     c => [c.nome, c.empresa, c.email, c.telefone])
   const abrir = (c?: Contato) => setAberto(c ? { id: c.id, dados: paraForm(c) as any } : { dados: CT_VAZIO })
+  // vindo do Radar: abre o contato pedido
+  useEffect(() => {
+    if (abrirId && itens) { const c = itens.find(x => x.id === abrirId); if (c) abrir(c) }
+  }, [abrirId, itens])
   const n = (t: TipoContato) => todos.filter(c => c.tipo === t).length
 
   return (
@@ -224,7 +230,7 @@ export function Contatos() {
                 subtitulo={aberto.id ? 'Editar contato' : undefined}
                 rotuloSalvar={aberto.id ? 'Salvar alterações' : 'Cadastrar contato'}
                 recurso="contatos" id={aberto.id} inicial={aberto.dados}
-                aoFechar={() => setAberto(null)} aoSalvar={() => { setAberto(null); recarregar() }}>
+                aoFechar={() => { setAberto(null); if (abrirId) window.location.hash = 'contatos' }} aoSalvar={() => { setAberto(null); recarregar() }} largo>
           {(f, set) => <>
             <div className="grupo">
               <Segmentos rotulo="Tipo de contato" opcoes={TIPOS} valor={f.tipo} set={v => set('tipo', v)} />
@@ -240,6 +246,9 @@ export function Contatos() {
             <div className="grupo">
               <label>Observações<textarea className="entrada" value={f.observacoes} onChange={e => set('observacoes', e.target.value)} /></label>
             </div>
+            {aberto.id
+              ? <HistoricoContato contatoId={aberto.id} />
+              : <p className="fraco" style={{ margin: 0 }}>Depois de cadastrar o contato, você registra aqui o Radar das conversas com ele.</p>}
           </>}
         </Painel>
       )}

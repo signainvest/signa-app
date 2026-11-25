@@ -21,6 +21,7 @@ interface PainelProps<F> {
   id?: number
   inicial: F
   rotuloSalvar: string
+  largo?: boolean
   aoFechar: () => void
   aoSalvar: () => void
   children: (f: F, set: <K extends keyof F>(k: K, v: F[K]) => void) => ReactNode
@@ -28,7 +29,7 @@ interface PainelProps<F> {
 
 /** Painel lateral com formulário: criar, editar e excluir. */
 export function Painel<F extends object>(p: PainelProps<F>) {
-  const { titulo, subtitulo, recurso, id, inicial, rotuloSalvar, aoFechar, aoSalvar, children } = p
+  const { titulo, subtitulo, recurso, id, inicial, rotuloSalvar, aoFechar, aoSalvar, children, largo } = p
   const [form, setForm] = useState<F>(inicial)
   const [erro, setErro] = useState<string | null>(null)
   const [ocupado, setOcupado] = useState(false)
@@ -57,7 +58,7 @@ export function Painel<F extends object>(p: PainelProps<F>) {
 
   return (
     <div className="fundo" onMouseDown={e => { if (e.target === e.currentTarget) aoFechar() }}>
-      <form className="painel" onSubmit={salvar} role="dialog" aria-modal="true" aria-label={titulo}>
+      <form className={'painel' + (largo ? ' largo' : '')} onSubmit={salvar} role="dialog" aria-modal="true" aria-label={titulo}>
         <div className="painel-topo">
           <div><h2>{titulo}</h2>{subtitulo && <p>{subtitulo}</p>}</div>
           <button type="button" className="fechar" onClick={aoFechar} aria-label="Fechar">{Icone.fechar}</button>
@@ -152,4 +153,10 @@ export function paraForm<T extends object>(o: T): { [K in keyof T]: any } {
   const r: any = {}
   for (const [k, v] of Object.entries(o)) r[k] = v ?? ''
   return r
+}
+
+export function nomeDe(email: string | null | undefined) {
+  if (!email) return '—'
+  const local = email.split('@')[0].replace(/[._-]+/g, ' ')
+  return local.replace(/\b\w/g, c => c.toUpperCase())
 }

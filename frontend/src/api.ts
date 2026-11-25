@@ -18,6 +18,13 @@ export interface Deal {
   data_fechamento: string | null; comissao_pct: number | null
 }
 
+export type JurisAnotacao = 'onshore' | 'offshore' | 'ambos'
+export interface Anotacao {
+  id: number; contato_id: number; contato_nome: string; contato_empresa: string | null; contato_tipo: TipoContato
+  data: string; texto: string; classes: string[]; jurisdicao: JurisAnotacao | null
+  criado_por: string | null; criado_em: string; atualizado_por: string | null; atualizado_em: string
+}
+
 export class ErroApi extends Error {
   constructor(public status: number, mensagem: string) { super(mensagem) }
 }
@@ -44,6 +51,7 @@ async function pedir<T>(caminho: string, metodo = 'GET', corpo?: unknown, tentat
 export const api = {
   eu: () => pedir<{ email: string }>('me'),
   listar: <T>(recurso: string) => pedir<T[]>(recurso),
+  // o recurso pode levar filtros: 'anotacoes?contato_id=3'
   salvar: <T>(recurso: string, dados: object, id?: number) =>
     pedir<T>(id ? `${recurso}/${id}` : recurso, id ? 'PUT' : 'POST', dados),
   remover: (recurso: string, id: number) => pedir<{ ok: true }>(`${recurso}/${id}`, 'DELETE'),
@@ -56,6 +64,7 @@ export const STATUS: Record<Status, string> = {
   em_analise: 'Em análise', em_captacao: 'Em captação', encerrada: 'Encerrada', descartada: 'Descartada',
 }
 export const JURISDICOES: Record<Jurisdicao, string> = { onshore: 'Onshore', offshore: 'Offshore' }
+export const JURIS_ANOTACAO: Record<JurisAnotacao, string> = { onshore: 'Onshore', offshore: 'Offshore', ambos: 'Ambos' }
 
 // Lista provisória — substituir pelas classes usadas na Baluarte.
 export const CLASSES_ATIVO = [

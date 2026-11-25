@@ -1,27 +1,28 @@
 import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { api, ErroApi } from './api'
-import { iniciais } from './comum'
+import { iniciais, nomeDe } from './comum'
 import { Icone } from './icones'
 import { Contatos, Oportunidades } from './paginas'
+import { Radar } from './anotacoes'
 import './styles.css'
 
 // "Deals fechados" fica fora do menu por enquanto (a tela e os dados continuam em paginas.tsx > Deals)
 const ABAS = [
-  { id: 'oportunidades', rotulo: 'Oportunidades', C: Oportunidades },
-  { id: 'contatos', rotulo: 'Contatos', C: Contatos },
+  { id: 'oportunidades', rotulo: 'Oportunidades' },
+  { id: 'radar', rotulo: 'Radar' },
+  { id: 'contatos', rotulo: 'Contatos' },
 ] as const
+type AbaId = typeof ABAS[number]['id']
 
-function abaAtual() {
-  const h = window.location.hash.replace('#', '')
-  return ABAS.find(a => a.id === h)?.id ?? 'oportunidades'
+/** '#contatos/12' abre a aba Contatos já com o contato 12 aberto. */
+function lerHash(): { aba: AbaId; id?: number } {
+  const [h, id] = window.location.hash.replace('#', '').split('/')
+  const aba = ABAS.find(a => a.id === h)?.id ?? 'oportunidades'
+  return { aba, id: id ? Number(id) : undefined }
 }
 function lerRecolhido() {
   try { return localStorage.getItem('signa.menu') === 'recolhido' } catch { return false }
-}
-function nomeDe(email: string) {
-  const local = email.split('@')[0].replace(/[._-]+/g, ' ')
-  return local.replace(/\b\w/g, c => c.toUpperCase())
 }
 
 function Selo({ tamanho = 44 }: { tamanho?: number }) {
@@ -31,12 +32,13 @@ function Selo({ tamanho = 44 }: { tamanho?: number }) {
 function App() {
   const [email, setEmail] = useState<string | null>(null)
   const [bloqueio, setBloqueio] = useState<string | null>(null)
-  const [aba, setAba] = useState(abaAtual)
+  const [rota, setRota] = useState(lerHash)
+  const aba = rota.aba
   const [recolhido, setRecolhido] = useState(lerRecolhido)
 
   useEffect(() => {
     api.eu().then(r => setEmail(r.email)).catch(e => setBloqueio(e instanceof ErroApi ? e.message : 'Não foi possível entrar.'))
-    const h = () => setAba(abaAtual())
+    const h = () => setRota(lerHash())
     window.addEventListener('hashchange', h)
     return () => window.removeEventListener('hashchange', h)
   }, [])
@@ -58,7 +60,6 @@ function App() {
   )
   if (!email) return <div className="app" style={{ display: 'block' }}><main className="centro"><Selo tamanho={88} /></main></div>
 
-  const Atual = ABAS.find(a => a.id === aba)!.C
   const nome = nomeDe(email)
 
   return (
@@ -96,7 +97,11 @@ function App() {
       </aside>
 
       <main className="palco">
-        <div className="folha" key={aba}><div className="folha-in"><Atual /></div></div>
+        <div className="folha" key={aba}><div className="folha-in">
+          {aba === 'oportunidades' && <Oportunidades />}
+          {aba === 'radar' && <Radar aoAbrirContato={id => { window.location.hash = 'contatos/' + id }} />}
+          {aba === 'contatos' && <Contatos abrirId={rota.id} />}
+        </div></div>
       </main>
     </div>
   )
