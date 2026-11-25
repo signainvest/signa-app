@@ -76,7 +76,6 @@ function App() {
             </button>
           </div>
 
-          <p className="secao-nav">CRM</p>
           <nav className="menu" aria-label="Seções">
             {ABAS.map(a => (
               <a key={a.id} href={'#' + a.id} className="item" aria-current={a.id === aba ? 'page' : undefined}

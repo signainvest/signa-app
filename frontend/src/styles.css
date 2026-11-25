@@ -55,7 +55,7 @@ svg{display:block}
 .alternar:hover{background:var(--glass);color:var(--ivory);border-color:var(--glass-line)}
 
 .secao-nav{margin:26px 0 8px 12px;font-size:12px;color:rgba(243,237,225,.42);letter-spacing:.02em}
-.menu{display:flex;flex-direction:column;gap:4px}
+.menu{display:flex;flex-direction:column;gap:4px;margin-top:28px}
 .item{position:relative;display:flex;align-items:center;gap:12px;min-height:44px;padding:0 14px;border-radius:var(--r-ctl);
   border:1px solid transparent;background:none;color:rgba(243,237,225,.72);text-decoration:none;text-align:left;white-space:nowrap;
   font-size:15px;font-weight:500;transition:background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
