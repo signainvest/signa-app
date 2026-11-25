@@ -14,7 +14,7 @@ function filtrar<T>(itens: T[] | null, busca: string, campos: (i: T) => (string 
 
 // ======================================================= Oportunidades
 
-const OP_VAZIA = { nome: '', originador_id: '', classe_ativo: '', jurisdicao: 'onshore', valor_buscado: '', status: 'em_analise', observacoes: '' }
+const OP_VAZIA = { nome: '', originador_id: '', classe_ativo: '', jurisdicao: 'onshore', total_captacao: '', ticket_minimo: '', status: 'em_analise', observacoes: '' }
 
 export function Oportunidades() {
   const { itens, erro, recarregar } = useLista<Oportunidade>('oportunidades')
@@ -49,7 +49,7 @@ export function Oportunidades() {
       <Estado itens={lista} erro={erro} vazio={<><strong>Nenhuma oportunidade ainda</strong>Cadastre a primeira em “Nova oportunidade”.</>}>
         <div className="tabela-wrap">
           <table>
-            <thead><tr><th>Oportunidade</th><th>Originador</th><th>Classe</th><th>Jurisdição</th><th className="num">Valor buscado</th><th>Status</th></tr></thead>
+            <thead><tr><th>Oportunidade</th><th>Originador</th><th>Classe</th><th>Jurisdição</th><th className="num">Total da captação</th><th className="num">Ticket mín.</th><th>Status</th></tr></thead>
             <tbody>
               {lista?.map(o => (
                 <tr key={o.id} tabIndex={0} onClick={() => setAberto({ id: o.id, dados: paraForm(o) as any })}
@@ -58,7 +58,8 @@ export function Oportunidades() {
                   <td>{o.originador_nome || <span className="fraco">—</span>}</td>
                   <td>{o.classe_ativo || <span className="fraco">—</span>}</td>
                   <td>{JURISDICOES[o.jurisdicao]}</td>
-                  <td className="num">{dinheiro(o.valor_buscado, o.jurisdicao)}</td>
+                  <td className="num">{dinheiro(o.total_captacao, o.jurisdicao)}</td>
+                  <td className="num">{dinheiro(o.ticket_minimo, o.jurisdicao)}</td>
                   <td><span className={'selo' + (o.status === 'em_captacao' ? ' cheio' : o.status === 'descartada' ? ' apagado' : '')}>{STATUS[o.status]}</span></td>
                 </tr>
               ))}
@@ -92,15 +93,18 @@ export function Oportunidades() {
               </label>
             </div>
             <div className="duas">
-              <label>Valor buscado <span className="opc">({f.jurisdicao === 'offshore' ? 'US$' : 'R$'})</span>
-                <input className="entrada" type="number" min="0" step="any" inputMode="decimal" value={f.valor_buscado} onChange={e => set('valor_buscado', e.target.value)} />
+              <label>Total da captação <span className="opc">({f.jurisdicao === 'offshore' ? 'US$' : 'R$'})</span>
+                <input className="entrada" type="number" min="0" step="any" inputMode="decimal" value={f.total_captacao} onChange={e => set('total_captacao', e.target.value)} />
               </label>
-              <label>Status
+              <label>Ticket mín. <span className="opc">({f.jurisdicao === 'offshore' ? 'US$' : 'R$'})</span>
+                <input className="entrada" type="number" min="0" step="any" inputMode="decimal" value={f.ticket_minimo} onChange={e => set('ticket_minimo', e.target.value)} />
+              </label>
+            </div>
+            <label>Status
                 <select className="entrada" value={f.status} onChange={e => set('status', e.target.value)}>
                   {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </label>
-            </div>
             <label>Observações<textarea className="entrada" value={f.observacoes} onChange={e => set('observacoes', e.target.value)} /></label>
           </>}
         </Painel>

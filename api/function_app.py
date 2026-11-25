@@ -48,7 +48,8 @@ SCHEMA = [
         originador_id INT NULL REFERENCES dbo.contatos(id),
         classe_ativo NVARCHAR(100) NULL,
         jurisdicao NVARCHAR(10) NOT NULL DEFAULT 'onshore',
-        valor_buscado DECIMAL(18,2) NULL,
+        total_captacao DECIMAL(18,2) NULL,
+        ticket_minimo DECIMAL(18,2) NULL,
         status NVARCHAR(20) NOT NULL DEFAULT 'em_analise',
         observacoes NVARCHAR(MAX) NULL,
         criado_em DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
@@ -71,6 +72,16 @@ SCHEMA = [
         atualizado_em DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
         atualizado_por NVARCHAR(200) NULL
     )
+    """,
+    # v0.2: "Valor buscado" virou "Total da captação" e entrou "Ticket mínimo"
+    """
+    IF COL_LENGTH('dbo.oportunidades','valor_buscado') IS NOT NULL
+       AND COL_LENGTH('dbo.oportunidades','total_captacao') IS NULL
+    EXEC sp_rename 'dbo.oportunidades.valor_buscado', 'total_captacao', 'COLUMN'
+    """,
+    """
+    IF COL_LENGTH('dbo.oportunidades','ticket_minimo') IS NULL
+    ALTER TABLE dbo.oportunidades ADD ticket_minimo DECIMAL(18,2) NULL
     """,
 ]
 
@@ -317,7 +328,7 @@ def contato(req, conn, email):
 
 SQL_OPORTUNIDADE = """
 SELECT o.id, o.nome, o.originador_id, c.nome AS originador_nome, o.classe_ativo, o.jurisdicao,
-       o.valor_buscado, o.status, o.observacoes, o.atualizado_em
+       o.total_captacao, o.ticket_minimo, o.status, o.observacoes, o.atualizado_em
 FROM dbo.oportunidades o LEFT JOIN dbo.contatos c ON c.id = o.originador_id
 """
 
@@ -328,7 +339,8 @@ def campos_oportunidade(d):
         inteiro(d, "originador_id"),
         texto(d, "classe_ativo", maximo=100),
         escolha(d, "jurisdicao", JURISDICOES, "onshore"),
-        numero(d, "valor_buscado"),
+        numero(d, "total_captacao"),
+        numero(d, "ticket_minimo"),
         escolha(d, "status", STATUS_OPORTUNIDADE, "em_analise"),
         texto(d, "observacoes", maximo=None),
     )
@@ -342,8 +354,9 @@ def oportunidades(req, conn, email):
         cur.execute(SQL_OPORTUNIDADE + " ORDER BY o.atualizado_em DESC")
         return resposta(cur.fetchall())
     c = campos_oportunidade(corpo_json(req))
-    novo = um(cur, "INSERT INTO dbo.oportunidades (nome, originador_id, classe_ativo, jurisdicao, valor_buscado, status,"
-                   " observacoes, criado_por, atualizado_por) OUTPUT INSERTED.id VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    novo = um(cur, "INSERT INTO dbo.oportunidades (nome, originador_id, classe_ativo, jurisdicao, total_captacao, ticket_minimo,"
+                   " status, observacoes, criado_por, atualizado_por) OUTPUT INSERTED.id"
+                   " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
               c + (email, email))
     return resposta(um(cur, SQL_OPORTUNIDADE + " WHERE o.id=%s", (novo["id"],)), 201)
 
@@ -358,7 +371,7 @@ def oportunidade(req, conn, email):
         return resposta({"ok": True})
     c = campos_oportunidade(corpo_json(req))
     cur.execute("UPDATE dbo.oportunidades SET nome=%s, originador_id=%s, classe_ativo=%s, jurisdicao=%s,"
-                " valor_buscado=%s, status=%s, observacoes=%s, atualizado_em=SYSUTCDATETIME(), atualizado_por=%s"
+                " total_captacao=%s, ticket_minimo=%s, status=%s, observacoes=%s, atualizado_em=SYSUTCDATETIME(), atualizado_por=%s"
                 " WHERE id=%s", c + (email, i))
     linha = um(cur, SQL_OPORTUNIDADE + " WHERE o.id=%s", (i,))
     if not linha:

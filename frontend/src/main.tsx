@@ -1,12 +1,12 @@
 import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { api, ErroApi } from './api'
-import { Contatos, Deals, Oportunidades } from './paginas'
+import { Contatos, Oportunidades } from './paginas'
 import './styles.css'
 
+// "Deals fechados" fica fora do menu por enquanto (a tela e os dados continuam no código: paginas.tsx > Deals)
 const ABAS = [
   { id: 'oportunidades', rotulo: 'Oportunidades', C: Oportunidades },
-  { id: 'deals', rotulo: 'Deals fechados', C: Deals },
   { id: 'contatos', rotulo: 'Contatos', C: Contatos },
 ] as const
 
@@ -29,7 +29,7 @@ function App() {
 
   if (bloqueio) return (
     <main className="centro"><div>
-      <img src="/brand/signa-invest-horizontal-grafite.svg" alt="Signa Invest" width="200" height="67" />
+      <img src="/brand/sinete-256.webp" alt="Signa Invest" width="120" height="120" />
       <h1>Acesso restrito</h1>
       <p className="sub">{bloqueio}</p>
       <p><a className="botao" href="/logout">Sair e entrar com outra conta</a></p>
@@ -39,23 +39,24 @@ function App() {
 
   const Atual = ABAS.find(a => a.id === aba)!.C
   return (
-    <>
-      <header className="topo">
-        <div className="topo-in">
-          <a href="#oportunidades" aria-label="Signa Invest - início">
-            <img src="/brand/signa-invest-horizontal-marfim.svg" alt="Signa Invest" width="132" height="44" />
-          </a>
-          <nav className="abas" aria-label="Seções">
-            {ABAS.map(a => (
-              <button key={a.id} className="aba" aria-current={a.id === aba ? 'page' : undefined}
-                      onClick={() => { window.location.hash = a.id }}>{a.rotulo}</button>
-            ))}
-          </nav>
-          <div className="usuario"><span>{email}</span><a href="/logout">Sair</a></div>
+    <div className="moldura">
+      <aside className="lateral">
+        <a className="marca" href="#oportunidades" aria-label="Signa Invest - início">
+          <img src="/brand/sinete-256.webp" alt="Signa Invest" width="88" height="88" />
+        </a>
+        <nav className="menu" aria-label="Seções">
+          {ABAS.map(a => (
+            <button key={a.id} className="item" aria-current={a.id === aba ? 'page' : undefined}
+                    onClick={() => { window.location.hash = a.id }}>{a.rotulo}</button>
+          ))}
+        </nav>
+        <div className="usuario">
+          <span title={email}>{email}</span>
+          <a href="/logout">Sair</a>
         </div>
-      </header>
+      </aside>
       <main className="pagina"><Atual key={aba} /></main>
-    </>
+    </div>
   )
 }
 

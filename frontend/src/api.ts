@@ -8,7 +8,8 @@ export interface Contato {
 }
 export interface Oportunidade {
   id: number; nome: string; originador_id: number | null; originador_nome: string | null
-  classe_ativo: string | null; jurisdicao: Jurisdicao; valor_buscado: number | null; status: Status
+  classe_ativo: string | null; jurisdicao: Jurisdicao; total_captacao: number | null; ticket_minimo: number | null
+  status: Status
   observacoes: string | null
 }
 export interface Deal {
