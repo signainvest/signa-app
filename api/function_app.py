@@ -116,7 +116,8 @@ def usuario(req: func.HttpRequest) -> str:
         raise HttpErro(403, "Use sua conta Microsoft da Signa Invest.")
     email = (principal.get("userDetails") or "").strip().lower()
     if not email.endswith("@" + DOMINIO):
-        raise HttpErro(403, f"Acesso restrito a contas @{DOMINIO}.")
+        logging.warning("Acesso negado: principal=%s", principal)
+        raise HttpErro(403, f"Acesso restrito a contas @{DOMINIO}. (recebido: '{email}', rota: {req.url})")
     if TENANT_ID:
         claims = {c.get("typ"): c.get("val") for c in principal.get("claims") or []}
         tid = (claims.get("http://schemas.microsoft.com/identity/claims/tenantid")
