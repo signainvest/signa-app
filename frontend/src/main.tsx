@@ -5,12 +5,14 @@ import { iniciais, nomeDe } from './comum'
 import { Icone } from './icones'
 import { Contatos, Oportunidades } from './paginas'
 import { Radar } from './anotacoes'
+import { Match } from './match'
 import './styles.css'
 
 // "Deals fechados" fica fora do menu por enquanto (a tela e os dados continuam em paginas.tsx > Deals)
 const ABAS = [
   { id: 'oportunidades', rotulo: 'Oportunidades' },
   { id: 'radar', rotulo: 'Radar' },
+  { id: 'match', rotulo: 'Match' },
   { id: 'contatos', rotulo: 'Contatos' },
 ] as const
 type AbaId = typeof ABAS[number]['id']
@@ -100,6 +102,7 @@ function App() {
         <div className="folha" key={aba}><div className="folha-in">
           {aba === 'oportunidades' && <Oportunidades />}
           {aba === 'radar' && <Radar aoAbrirContato={id => { window.location.hash = 'contatos/' + id }} />}
+          {aba === 'match' && <Match aoAbrirContato={id => { window.location.hash = 'contatos/' + id }} />}
           {aba === 'contatos' && <Contatos abrirId={rota.id} />}
         </div></div>
       </main>

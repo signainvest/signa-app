@@ -6,6 +6,7 @@ import {
 import { Cabeca, Estado, Ferramentas, Painel, Segmentos, paraForm, useLista } from './comum'
 import { Icone } from './icones'
 import { HistoricoContato } from './anotacoes'
+import { MatchDaOportunidade, OportunidadesDoInvestidor } from './match'
 import { useEffect } from 'react'
 
 function buscar<T>(itens: T[], busca: string, campos: (i: T) => (string | null | undefined)[]) {
@@ -122,7 +123,7 @@ export function Oportunidades() {
                 subtitulo={aberto.id ? 'Editar oportunidade' : 'Preencha o essencial; o resto pode vir depois.'}
                 rotuloSalvar={aberto.id ? 'Salvar alterações' : 'Cadastrar oportunidade'}
                 recurso="oportunidades" id={aberto.id} inicial={aberto.dados}
-                aoFechar={() => setAberto(null)} aoSalvar={() => { setAberto(null); recarregar() }}>
+                aoFechar={() => setAberto(null)} aoSalvar={() => { setAberto(null); recarregar() }} largo>
           {(f, set) => <>
             <div className="grupo">
               <label>Nome<input className="entrada" required autoFocus value={f.nome} onChange={e => set('nome', e.target.value)} placeholder="Ex.: FIP Infraestrutura Sul" /></label>
@@ -159,6 +160,7 @@ export function Oportunidades() {
             <div className="grupo">
               <label>Observações<textarea className="entrada" value={f.observacoes} onChange={e => set('observacoes', e.target.value)} placeholder="Tese, prazos, próximos passos…" /></label>
             </div>
+            {aberto.id && <MatchDaOportunidade opId={aberto.id} />}
           </>}
         </Painel>
       )}
@@ -246,6 +248,7 @@ export function Contatos({ abrirId }: { abrirId?: number }) {
             <div className="grupo">
               <label>Observações<textarea className="entrada" value={f.observacoes} onChange={e => set('observacoes', e.target.value)} /></label>
             </div>
+            {aberto.id && f.tipo === 'investidor' && <OportunidadesDoInvestidor contatoId={aberto.id} />}
             {aberto.id
               ? <HistoricoContato contatoId={aberto.id} />
               : <p className="fraco" style={{ margin: 0 }}>Depois de cadastrar o contato, você registra aqui o Radar das conversas com ele.</p>}
