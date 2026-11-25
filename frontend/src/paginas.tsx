@@ -131,14 +131,14 @@ export function Contatos() {
       <Estado itens={lista} erro={erro} vazio={<><strong>Nenhum contato ainda</strong>Cadastre o primeiro em “Novo contato”.</>}>
         <div className="tabela-wrap">
           <table>
-            <thead><tr><th>Nome</th><th>Empresa</th><th>Tipo</th><th>E-mail</th><th>Telefone</th></tr></thead>
+            <thead><tr><th>Tipo</th><th>Empresa</th><th>Nome</th><th>E-mail</th><th>Telefone</th></tr></thead>
             <tbody>
               {lista?.map(c => (
                 <tr key={c.id} tabIndex={0} onClick={() => setAberto({ id: c.id, dados: paraForm(c) as any })}
                     onKeyDown={e => e.key === 'Enter' && setAberto({ id: c.id, dados: paraForm(c) as any })}>
-                  <td><strong>{c.nome}</strong></td>
-                  <td>{c.empresa || <span className="fraco">—</span>}</td>
                   <td><span className="selo">{TIPOS[c.tipo]}</span></td>
+                  <td>{c.empresa || <span className="fraco">—</span>}</td>
+                  <td><strong>{c.nome}</strong></td>
                   <td>{c.email || <span className="fraco">—</span>}</td>
                   <td>{c.telefone || <span className="fraco">—</span>}</td>
                 </tr>
