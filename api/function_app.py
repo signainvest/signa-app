@@ -327,7 +327,7 @@ def contato(req, conn, email):
 # --- oportunidades
 
 SQL_OPORTUNIDADE = """
-SELECT o.id, o.nome, o.originador_id, c.nome AS originador_nome, o.classe_ativo, o.jurisdicao,
+SELECT o.id, o.nome, o.originador_id, c.nome AS originador_nome, c.empresa AS originador_empresa, o.classe_ativo, o.jurisdicao,
        o.total_captacao, o.ticket_minimo, o.status, o.observacoes, o.atualizado_em
 FROM dbo.oportunidades o LEFT JOIN dbo.contatos c ON c.id = o.originador_id
 """

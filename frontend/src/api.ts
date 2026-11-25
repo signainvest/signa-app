@@ -7,7 +7,7 @@ export interface Contato {
   tipo: TipoContato; observacoes: string | null
 }
 export interface Oportunidade {
-  id: number; nome: string; originador_id: number | null; originador_nome: string | null
+  id: number; nome: string; originador_id: number | null; originador_nome: string | null; originador_empresa: string | null
   classe_ativo: string | null; jurisdicao: Jurisdicao; total_captacao: number | null; ticket_minimo: number | null
   status: Status
   observacoes: string | null

@@ -3,7 +3,7 @@ import {
   CLASSES_ATIVO, Contato, Deal, JURISDICOES, Jurisdicao, Oportunidade, STATUS, Status, TIPOS, TipoContato,
   dataBr, dinheiro, pct, sem,
 } from './api'
-import { Cabeca, Estado, Ferramentas, Painel, Segmentos, iniciais, paraForm, useLista } from './comum'
+import { Cabeca, Estado, Ferramentas, Painel, Segmentos, paraForm, useLista } from './comum'
 import { Icone } from './icones'
 
 function buscar<T>(itens: T[], busca: string, campos: (i: T) => (string | null | undefined)[]) {
@@ -56,7 +56,7 @@ export function Oportunidades() {
   const todos = itens || []
   const conta = (s: Status) => todos.filter(o => o.status === s).length
   const lista = itens && buscar(filtro === 'todas' ? itens : itens.filter(o => o.status === filtro), busca,
-    o => [o.nome, o.originador_nome, o.classe_ativo, STATUS[o.status], JURISDICOES[o.jurisdicao]])
+    o => [o.nome, o.originador_nome, o.originador_empresa, o.classe_ativo, STATUS[o.status], JURISDICOES[o.jurisdicao]])
 
   const resumo = useMemo(() => {
     const capt = todos.filter(o => o.status === 'em_captacao')
@@ -95,12 +95,12 @@ export function Oportunidades() {
         <div className="tabela">
           <div className="tabela-rolo">
             <table>
-              <thead><tr><th>Oportunidade</th><th>Classe</th><th>Jurisdição</th><th className="num">Total da captação</th><th className="num">Ticket mín.</th><th>Status</th></tr></thead>
+              <thead><tr><th>Empresa</th><th>Oportunidade</th><th>Classe</th><th>Jurisdição</th><th className="num">Total da captação</th><th className="num">Ticket mín.</th><th>Status</th></tr></thead>
               <tbody>
                 {lista?.map(o => (
                   <tr key={o.id} tabIndex={0} onClick={() => abrir(o)} onKeyDown={e => e.key === 'Enter' && abrir(o)}>
-                    <td><div className="nome-cel"><div><strong>{o.nome}</strong>
-                      <span className="linha2">{o.originador_nome ? `via ${o.originador_nome}` : 'Sem originador'}</span></div></div></td>
+                    <td>{o.originador_empresa || <span className="fraco">—</span>}</td>
+                    <td><strong>{o.nome}</strong></td>
                     <td>{o.classe_ativo || <span className="fraco">—</span>}</td>
                     <td>{JURISDICOES[o.jurisdicao]}</td>
                     <td className="num">{dinheiro(o.total_captacao, o.jurisdicao)}</td>
@@ -207,7 +207,7 @@ export function Contatos() {
                   <tr key={c.id} tabIndex={0} onClick={() => abrir(c)} onKeyDown={e => e.key === 'Enter' && abrir(c)}>
                     <td><Pilula classe={c.tipo}>{TIPOS[c.tipo]}</Pilula></td>
                     <td>{c.empresa || <span className="fraco">—</span>}</td>
-                    <td><div className="nome-cel"><span className="ini" aria-hidden="true">{iniciais(c.nome)}</span><strong>{c.nome}</strong></div></td>
+                    <td><strong>{c.nome}</strong></td>
                     <td>{c.email ? <a href={`mailto:${c.email}`} onClick={e => e.stopPropagation()} style={{ color: 'inherit' }}>{c.email}</a> : <span className="fraco">—</span>}</td>
                     <td>{c.telefone || <span className="fraco">—</span>}</td>
                   </tr>
