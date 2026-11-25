@@ -69,13 +69,13 @@ export function Oportunidades() {
 
   return (
     <>
-      <Cabeca titulo="Oportunidades" sub="Investimentos apresentados à Signa, do primeiro contato à captação."
+      <Cabeca titulo="Oportunidades" 
               acao={<button className="botao" onClick={() => abrir()}>{Icone.mais}Nova oportunidade</button>} />
 
       {todos.length > 0 && (
         <div className="faixa">
-          <div><div className="rot"><span className="ponto" style={{ background: 'var(--brass)' }} />Em análise</div><div className="val">{resumo.analise}</div></div>
-          <div><div className="rot"><span className="ponto" style={{ background: 'var(--sage)' }} />Em captação</div><div className="val">{resumo.captacao}</div></div>
+          <div><div className="rot"><span className="ponto" style={{ background: 'var(--muted)' }} />Em análise</div><div className="val">{resumo.analise}</div></div>
+          <div><div className="rot"><span className="ponto" style={{ background: 'var(--graphite)' }} />Em captação</div><div className="val">{resumo.captacao}</div></div>
           <div><div className="rot">Volume em captação, onshore</div><div className="val">{dinheiro(resumo.brl)}</div></div>
           <div><div className="rot">Volume em captação, offshore</div><div className="val">{dinheiro(resumo.usd, 'offshore')}</div></div>
         </div>
@@ -182,7 +182,7 @@ export function Contatos() {
 
   return (
     <>
-      <Cabeca titulo="Contatos" sub="Investidores, originadores e demais relacionamentos da Signa."
+      <Cabeca titulo="Contatos" 
               acao={<button className="botao" onClick={() => abrir()}>{Icone.mais}Novo contato</button>} />
 
       <Ferramentas

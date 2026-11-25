@@ -80,13 +80,13 @@ export function Painel<F extends object>(p: PainelProps<F>) {
 
 const hoje = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
 
-export function Cabeca({ titulo, sub, acao }: { titulo: string; sub: string; acao: ReactNode }) {
+export function Cabeca({ titulo, sub, acao }: { titulo: string; sub?: string; acao: ReactNode }) {
   return (
     <div className="cabeca">
       <div>
         <p className="data">{hoje.charAt(0).toUpperCase() + hoje.slice(1)}</p>
         <h1 className="titulo">{titulo}</h1>
-        <p className="sub">{sub}</p>
+        {sub && <p className="sub">{sub}</p>}
       </div>
       {acao}
     </div>
