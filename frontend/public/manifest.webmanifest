@@ -3,7 +3,7 @@
   "short_name": "Signa",
   "description": "CRM da Signa Invest",
   "id": "/",
-  "start_url": "/#oportunidades",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#181B19",

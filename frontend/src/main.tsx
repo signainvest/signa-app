@@ -10,17 +10,17 @@ import './styles.css'
 
 // "Deals fechados" fica fora do menu por enquanto (a tela e os dados continuam em paginas.tsx > Deals)
 const ABAS = [
+  { id: 'contatos', rotulo: 'Contatos' },
   { id: 'oportunidades', rotulo: 'Oportunidades' },
   { id: 'radar', rotulo: 'Radar' },
   { id: 'match', rotulo: 'Match' },
-  { id: 'contatos', rotulo: 'Contatos' },
 ] as const
 type AbaId = typeof ABAS[number]['id']
 
 /** '#contatos/12' abre a aba Contatos já com o contato 12 aberto. */
 function lerHash(): { aba: AbaId; id?: number } {
   const [h, id] = window.location.hash.replace('#', '').split('/')
-  const aba = ABAS.find(a => a.id === h)?.id ?? 'oportunidades'
+  const aba = ABAS.find(a => a.id === h)?.id ?? ABAS[0].id
   return { aba, id: id ? Number(id) : undefined }
 }
 function lerRecolhido() {
@@ -69,7 +69,7 @@ function App() {
       <aside className="nav">
         <div className="nav-vidro">
           <div className="nav-topo">
-            <a className="marca" href="#oportunidades" aria-label="Signa Invest - início">
+            <a className="marca" href="#contatos" aria-label="Signa Invest - início">
               <Selo />
               <img className="wordmark" src="/brand/signa-invest-wordmark-marfim.svg" alt="" width="79" height="30" />
             </a>
