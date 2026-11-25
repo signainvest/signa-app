@@ -1,0 +1,20 @@
+{
+  "routes": [
+    { "route": "/.auth/login/github", "statusCode": 404 },
+    { "route": "/.auth/login/twitter", "statusCode": 404 },
+    { "route": "/login", "redirect": "/.auth/login/aad", "statusCode": 302 },
+    { "route": "/logout", "redirect": "/.auth/logout?post_logout_redirect_uri=/", "statusCode": 302 },
+    { "route": "/.auth/*", "allowedRoles": ["anonymous", "authenticated"] },
+    { "route": "/*", "allowedRoles": ["authenticated"] }
+  ],
+  "responseOverrides": {
+    "401": { "redirect": "/.auth/login/aad?post_login_redirect_uri=.referrer", "statusCode": 302 }
+  },
+  "navigationFallback": { "rewrite": "/index.html", "exclude": ["/brand/*", "/fonts/*", "/*.{png,svg,ico,css,js,woff2}"] },
+  "platform": { "apiRuntime": "python:3.11" },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin"
+  }
+}
